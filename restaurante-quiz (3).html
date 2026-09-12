@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Restaurant Spanish</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap');
+
+:root{
+  --green:#58CC02;
+  --green-dark:#58A700;
+  --blue:#1CB0F6;
+  --blue-dark:#1899D6;
+  --red:#FF4B4B;
+  --bg:#FFFFFF;
+  --text:#3C3C3C;
+  --text-soft:#777777;
+  --gray-line:#E5E5E5;
+  --gray-fill:#F0F0F0;
+}
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family:'Nunito', sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.topbar{
+  width:100%;
+  max-width:680px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:20px 20px 0;
+}
+.progress-track{
+  flex:1;
+  height:16px;
+  background:var(--gray-line);
+  border-radius:8px;
+  overflow:hidden;
+}
+.progress-fill{
+  height:100%;
+  background:var(--green);
+  border-radius:8px;
+  transition:width .3s ease;
+  width:0%;
+}
+.hearts{
+  display:flex;
+  align-items:center;
+  gap:2px;
+  font-size:1.15rem;
+  white-space:nowrap;
+}
+
+.stage{
+  width:100%;
+  max-width:680px;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  padding:32px 24px 150px;
+}
+
+.q-kicker{
+  font-weight:800;
+  color:var(--text-soft);
+  font-size:0.95rem;
+  margin-bottom:18px;
+}
+.q-emoji{
+  font-size:4.5rem;
+  text-align:center;
+  margin-bottom:6px;
+  line-height:1;
+}
+.q-text{
+  font-weight:800;
+  font-size:1.5rem;
+  text-align:center;
+  margin:0 0 30px 0;
+}
+.q-text .accent{ color:var(--blue); }
+.q-sentence{
+  font-weight:800;
+  font-size:1.25rem;
+  text-align:center;
+  margin:0 0 26px 0;
+}
+
+.tiles{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:14px;
+}
+.tiles.single-col{ grid-template-columns:1fr; }
+@media (max-width:480px){ .tiles{ grid-template-columns:1fr; } }
+
+.tile{
+  background:var(--bg);
+  border:2.5px solid var(--gray-line);
+  border-radius:16px;
+  padding:18px 16px;
+  font-weight:800;
+  font-size:1.05rem;
+  color:var(--text);
+  text-align:center;
+  cursor:pointer;
+  transition:transform .08s ease, border-color .12s ease, background .12s ease;
+}
+.tile:hover:not(:disabled){ border-color:var(--blue); background:#EAF7FF; }
+.tile:active:not(:disabled){ transform:scale(0.97); }
+.tile:disabled{ cursor:default; }
+.tile.selected{ border-color:var(--blue); background:#EAF7FF; }
+.tile.correct{ border-color:var(--green); background:#EAFBE0; color:var(--green-dark); }
+.tile.incorrect{ border-color:var(--red); background:#FFEAEA; color:var(--red); }
+
+.type-input, textarea.type-input{
+  width:100%;
+  font-family:'Nunito', sans-serif;
+  font-weight:700;
+  font-size:1.2rem;
+  text-align:center;
+  padding:16px;
+  border:none;
+  border-bottom:3px solid var(--gray-line);
+  outline:none;
+  color:var(--text);
+  background:transparent;
+  resize:none;
+}
+.type-input:focus{ border-bottom-color:var(--blue); }
+.type-input:disabled{ color:var(--text-soft); }
+
+.hint{
+  text-align:center;
+  color:var(--text-soft);
+  font-weight:700;
+  font-size:0.95rem;
+  margin-top:18px;
+}
+
+.bottombar{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:var(--bg);
+  border-top:2px solid var(--gray-line);
+  padding:18px 24px 24px;
+  display:flex;
+  justify-content:center;
+}
+.bottombar.state-correct{ background:#D7FFB8; border-top-color:#D7FFB8; }
+.bottombar.state-incorrect{ background:#FFDFE0; border-top-color:#FFDFE0; }
+.bottombar-inner{
+  width:100%;
+  max-width:680px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+.bottombar-msg{ font-weight:800; font-size:1.1rem; }
+.bottombar-msg.good{ color:var(--green-dark); }
+.bottombar-msg.bad{ color:var(--red); }
+.bottombar-msg .sub{ display:block; font-size:0.9rem; font-weight:700; margin-top:2px; }
+
+.btn{
+  font-family:'Nunito', sans-serif;
+  font-weight:800;
+  font-size:1rem;
+  letter-spacing:0.5px;
+  text-transform:uppercase;
+  padding:15px 32px;
+  border-radius:14px;
+  border:none;
+  cursor:pointer;
+  color:#fff;
+  box-shadow:0 4px 0 rgba(0,0,0,0.15);
+  transition:transform .08s ease;
+}
+.btn:active{ transform:translateY(2px); box-shadow:0 2px 0 rgba(0,0,0,0.15); }
+.btn:disabled{ background:var(--gray-line); color:var(--text-soft); box-shadow:none; cursor:not-allowed; }
+.btn-check{ background:var(--green); }
+.btn-check:hover:not(:disabled){ background:var(--green-dark); }
+.btn-continue{ background:var(--blue); }
+.btn-continue:hover{ background:var(--blue-dark); }
+
+.center-screen{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:40px 24px;
+}
+.center-screen .big-emoji{ font-size:5rem; margin-bottom:8px; }
+.center-screen h1{ font-size:1.9rem; font-weight:900; margin:0 0 10px 0; }
+.center-screen p{ color:var(--text-soft); font-weight:700; max-width:38ch; margin:0 auto 28px; }
+
+.chips{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin:0 0 30px; }
+.chip{
+  background:var(--gray-fill);
+  color:var(--text);
+  font-weight:700;
+  font-size:0.85rem;
+  padding:8px 14px;
+  border-radius:20px;
+}
+
+.stat-row{ display:flex; gap:28px; margin-bottom:30px; }
+.stat{ text-align:center; }
+.stat b{ display:block; font-size:1.7rem; font-weight:900; color:var(--green-dark); }
+.stat span{ color:var(--text-soft); font-weight:700; font-size:0.85rem; }
+
+@media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+</style>
+</head>
+<body>
+
+<div class="topbar" id="topbar" style="display:none;">
+  <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="hearts" id="hearts"></div>
+</div>
+
+<div class="stage" id="app"></div>
+
+<script>
+const items = [
+  { type:'mc', emoji:'\u{1F935}', q:'waiter', options:['el camarero','el cliente','la mesa','la cocina'], correct:0 },
+  { type:'mc', emoji:'\u{1F4CB}', q:'menu', options:['el menú','el pedido','la silla','el vaso'], correct:0 },
+  { type:'mc', emoji:'\u{1F37D}', q:'table', options:['la mesa','el plato','la silla','el tenedor'], correct:0 },
+  { type:'mc', emoji:'\u{1F374}', q:'fork', options:['el tenedor','la cuchara','el cuchillo','el vaso'], correct:0 },
+  { type:'type', emoji:'\u{1F944}', q:'spoon', accept:['cuchara','la cuchara'] },
+  { type:'type', emoji:'\u2615', q:'coffee', accept:['cafe','el cafe'] },
+  { type:'sentence',
+    emoji:'\u{1F4CB}',
+    en:'The waiter brings the menu.',
+    choices:['El camarero trae el menú.','El camarero trae la cuenta.','El cliente trae el menú.'],
+    correct:0,
+    ownLabel:'Write your own simple sentence about a waiter or the menu.',
+    ownKeywords:['camarero','menu','menú'] },
+  { type:'sentence',
+    emoji:'\u{1F37D}',
+    en:'I want to reserve a table.',
+    choices:['Quiero reservar una mesa.','Quiero reservar una silla.','Quiero pagar la cuenta.'],
+    correct:0,
+    ownLabel:'Write a simple sentence about a table at a restaurant.',
+    ownKeywords:['mesa'] },
+  { type:'sentence',
+    emoji:'\u{1F9FE}',
+    en:'The bill, please.',
+    choices:['La cuenta, por favor.','El menú, por favor.','La propina, por favor.'],
+    correct:0,
+    ownLabel:'Write a sentence about paying the bill or leaving a tip.',
+    ownKeywords:['cuenta','propina','pagar'] },
+  { type:'sentence',
+    emoji:'\u{1F4B0}',
+    en:'The customer gives a tip.',
+    choices:['El cliente da una propina.','El camarero da una propina.','El cliente da un menú.'],
+    correct:0,
+    ownLabel:'Write a sentence using the word "propina" (tip).',
+    ownKeywords:['propina'] },
+];
+
+let state = { screen:'start', i:0, hearts:5, score:0, sentenceStep:'choice' };
+const app = document.getElementById('app');
+const topbar = document.getElementById('topbar');
+
+function normalize(s){
+  return s.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[¿?¡!.,]/g,'')
+    .replace(/^(el|la)\s+/,'')
+    .trim();
+}
+
+function setHearts(n){
+  const full = Math.max(n, 0);
+  const empty = Math.max(5 - full, 0);
+  document.getElementById('hearts').textContent = '\u2764\uFE0F'.repeat(full) + '\u{1F90D}'.repeat(empty);
+}
+
+function setProgress(){
+  const pct = Math.round((state.i / items.length) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function removeBar(){
+  const bar = document.querySelector('.bottombar');
+  if(bar) bar.remove();
+}
+
+function renderStart(){
+  topbar.style.display = 'none';
+  app.innerHTML = `
+    <div class="center-screen">
+      <div class="big-emoji">\u{1F37D}\uFE0F</div>
+      <h1>Restaurant Spanish</h1>
+      <p>Learn basic restaurant words and phrases in Spanish — waiter, menu, table, and more.</p>
+      <button class="btn btn-check" onclick="startLesson()">Start</button>
+    </div>
+  `;
+}
+
+function startLesson(){
+  state = { screen:'question', i:0, hearts:5, score:0, sentenceStep:'choice' };
+  topbar.style.display = 'flex';
+  setHearts(5);
+  renderQuestion();
+}
+
+function loseHeart(){
+  state.hearts = Math.max(0, state.hearts - 1);
+  setHearts(state.hearts);
+}
+
+function renderQuestion(){
+  setProgress();
+  const item = items[state.i];
+  let body = '';
+
+  if(item.type === 'mc'){
+    let tiles = '<div class="tiles">';
+    item.options.forEach((opt, idx) => {
+      tiles += `<button class="tile" id="tile-${idx}" onclick="checkMC(${idx})">${opt}</button>`;
+    });
+    tiles += '</div>';
+    body = `
+      <div class="q-kicker">Question ${state.i+1} of ${items.length}</div>
+      <div class="q-emoji">${item.emoji}</div>
+      <div class="q-text">How do you say <span class="accent">"${item.q}"</span> in Spanish?</div>
+      ${tiles}
+    `;
+  } else if(item.type === 'type'){
+    body = `
+      <div class="q-kicker">Question ${state.i+1} of ${items.length}</div>
+      <div class="q-emoji">${item.emoji}</div>
+      <div class="q-text">How do you say <span class="accent">"${item.q}"</span> in Spanish?</div>
+      <input type="text" class="type-input" id="type-box" placeholder="Type in Spanish..." autocomplete="off">
+      <div class="hint">Just the word — no need to add "el" or "la".</div>
+    `;
+  } else if(item.type === 'sentence'){
+    state.sentenceStep = 'choice';
+    body = renderSentenceChoice(item);
+  }
+
+  app.innerHTML = body;
+  renderBottombar();
+
+  if(item.type === 'type'){
+    const box = document.getElementById('type-box');
+    box.focus();
+    box.addEventListener('keydown', e => { if(e.key === 'Enter') checkType(); });
+  }
+}
+
+function renderSentenceChoice(item){
+  let tiles = '<div class="tiles single-col">';
+  item.choices.forEach((c, idx) => {
+    tiles += `<button class="tile" id="tile-${idx}" onclick="checkSentence(${idx})">${c}</button>`;
+  });
+  tiles += '</div>';
+  return `
+    <div class="q-kicker">Question ${state.i+1} of ${items.length} · sentence</div>
+    <div class="q-emoji">${item.emoji}</div>
+    <div class="q-sentence">Choose the correct translation:<br><span class="accent">"${item.en}"</span></div>
+    ${tiles}
+  `;
+}
+
+function renderSentenceOwn(item){
+  app.innerHTML = `
+    <div class="q-kicker">Question ${state.i+1} of ${items.length} · your turn</div>
+    <div class="q-emoji">${item.emoji}</div>
+    <div class="q-text" style="font-size:1.2rem;">${item.ownLabel}</div>
+    <textarea class="type-input" id="own-box" rows="2" placeholder="Write your sentence..."></textarea>
+    <div class="hint">Any reasonable sentence counts — this part is just for practice.</div>
+  `;
+  renderBottombar(null, 'own');
+}
+
+function renderBottombar(barState, mode){
+  const item = items[state.i];
+  let inner = '';
+
+  if(!barState){
+    if(mode === 'own'){
+      inner = `<div></div><button class="btn btn-check" onclick="submitOwn()">Save</button>`;
+    } else if(item.type === 'type'){
+      inner = `<div></div><button class="btn btn-check" onclick="checkType()">Check</button>`;
+    } else {
+      inner = `<div></div><div class="hint" style="margin:0;">Tap an answer above</div>`;
+    }
+  } else if(barState === 'correct'){
+    inner = `<div class="bottombar-msg good">Nice!<span class="sub">Correct answer</span></div>
+      <button class="btn btn-continue" onclick="advance()">Continue</button>`;
+  } else if(barState === 'incorrect'){
+    inner = `<div class="bottombar-msg bad">Not quite<span class="sub">Correct answer: ${answerLabel(item)}</span></div>
+      <button class="btn btn-continue" onclick="advance()">Continue</button>`;
+  } else if(barState === 'saved'){
+    inner = `<div class="bottombar-msg good">Saved!<span class="sub">Great practice</span></div>
+      <button class="btn btn-continue" onclick="advance()">Continue</button>`;
+  }
+
+  removeBar();
+  const bar = document.createElement('div');
+  bar.className = 'bottombar' + (barState === 'correct' || barState === 'saved' ? ' state-correct' : barState === 'incorrect' ? ' state-incorrect' : '');
+  bar.innerHTML = `<div class="bottombar-inner">${inner}</div>`;
+  document.body.appendChild(bar);
+}
+
+function answerLabel(item){
+  if(item.type === 'mc') return item.options[item.correct];
+  if(item.type === 'sentence') return item.choices[item.correct];
+  return item.accept[0];
+}
+
+function checkMC(idx){
+  const item = items[state.i];
+  const correct = idx === item.correct;
+  document.querySelectorAll('.tile').forEach((t,i) => {
+    t.disabled = true;
+    if(i === item.correct) t.classList.add('correct');
+    else if(i === idx && !correct) t.classList.add('incorrect');
+  });
+  if(correct) state.score++; else loseHeart();
+  renderBottombar(correct ? 'correct' : 'incorrect');
+}
+
+function checkType(){
+  const item = items[state.i];
+  const box = document.getElementById('type-box');
+  const val = normalize(box.value);
+  const correct = item.accept.some(a => normalize(a) === val) && val.length > 0;
+  box.disabled = true;
+  if(correct) state.score++; else loseHeart();
+  renderBottombar(correct ? 'correct' : 'incorrect');
+}
+
+function checkSentence(idx){
+  const item = items[state.i];
+  const correct = idx === item.correct;
+  document.querySelectorAll('.tile').forEach((t,i) => {
+    t.disabled = true;
+    if(i === item.correct) t.classList.add('correct');
+    else if(i === idx && !correct) t.classList.add('incorrect');
+  });
+  if(correct) state.score++; else loseHeart();
+  renderBottombar(correct ? 'correct' : 'incorrect');
+}
+
+function submitOwn(){
+  const box = document.getElementById('own-box');
+  const val = box.value;
+  box.disabled = true;
+  if(val.trim().length > 1) state.score += 0.5;
+  renderBottombar('saved');
+}
+
+function advance(){
+  const item = items[state.i];
+  removeBar();
+
+  if(item.type === 'sentence' && state.sentenceStep === 'choice'){
+    state.sentenceStep = 'own';
+    renderSentenceOwn(item);
+    return;
+  }
+
+  if(state.hearts <= 0){
+    renderOutOfHearts();
+    return;
+  }
+
+  if(state.i === items.length - 1){
+    renderEnd();
+    return;
+  }
+  state.i++;
+  renderQuestion();
+}
+
+function renderOutOfHearts(){
+  topbar.style.display = 'none';
+  app.innerHTML = `
+    <div class="center-screen">
+      <div class="big-emoji">\u{1F494}</div>
+      <h1>Out of hearts</h1>
+      <p>No worries — every server learns this way. Try the lesson again from the start.</p>
+      <button class="btn btn-check" onclick="startLesson()">Try again</button>
+    </div>
+  `;
+}
+
+function renderEnd(){
+  topbar.style.display = 'none';
+  const xp = Math.round(state.score * 10);
+  const words = ['camarero','menú','mesa','tenedor','cuchara','café','cuenta','propina'];
+  let chips = '<div class="chips">';
+  words.forEach(w => chips += `<div class="chip">${w}</div>`);
+  chips += '</div>';
+
+  app.innerHTML = `
+    <div class="center-screen">
+      <div class="big-emoji">\u{1F389}</div>
+      <h1>Lesson complete!</h1>
+      <div class="stat-row">
+        <div class="stat"><b>${state.score}/${items.length}</b><span>correct</span></div>
+        <div class="stat"><b>${xp}</b><span>XP</span></div>
+        <div class="stat"><b>${state.hearts}</b><span>hearts left</span></div>
+      </div>
+      <p>Words and phrases practiced:</p>
+      ${chips}
+      <button class="btn btn-check" onclick="startLesson()">Practice again</button>
+    </div>
+  `;
+}
+
+renderStart();
+</script>
+
+</body>
+</html>
